@@ -3,6 +3,17 @@
 The following examples will show howto use OpenTelemetry's autoinstrumentation features in combination with OpenTelemetry Collector to instrument some custom Applications and forward logs/traces/metrics to a centralized collector or Signal storage system (like Tempo, Loki Grafana)
 
 
+## Base namespace
+
+The basic setup requires the namespace, OpenTelemetryCollector and OpenTelemetry AutoInstrumentation CR to be deployed.
+These components are shared between all auto instrumented deployments and still provide tenancy as described below.
+Execute the following command to create them
+
+```
+oc create -k deploy
+```
+
+
 ## Example applications
 
 The repository includes 5 example applications:
