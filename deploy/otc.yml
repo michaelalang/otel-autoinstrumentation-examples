@@ -1,0 +1,118 @@
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: mockbin
+spec:
+  config:
+    connectors:
+      spanmetrics:
+        dimensions:
+          - name: k8s.namespace.name
+        events:
+          dimensions:
+            - name: k8s.namespace.name
+          enabled: true
+        exemplars:
+          enabled: true
+        metrics_flush_interval: 5s
+        namespace: span.metrics
+    exporters:
+      debug:
+        sampling_initial: 5
+        sampling_thereafter: 200
+        verbosity: detailed
+      otlp/central:
+        endpoint: 'central-collector.telemetry.svc:4317'
+        tls:
+          insecure: true
+    processors:
+      batch:
+        send_batch_max_size: 1024
+        send_batch_size: 1024
+      memory_limiter:
+        check_interval: 1s
+        limit_mib: 1000
+        spike_limit_percentage: 10
+      transform/addtenant:
+        error_mode: ignore
+        trace_statements:
+          - set(resource.attributes["tenant"], "tenantA") where resource.attributes["tenant"] == nil
+        log_statements:
+          - set(resource.attributes["tenant"], "tenantA") where resource.attributes["tenant"] == nil
+        metric_statements:
+          - set(resource.attributes["tenant"], "tenantA") where resource.attributes["tenant"] == nil
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+    service:
+      pipelines:
+        logs:
+          exporters:
+            - debug
+            #- otlp/central
+          processors:
+            - batch
+            - memory_limiter
+            - transform/addtenant
+          receivers:
+            - otlp
+        metrics:
+          exporters:
+            - debug
+            #- otlp/central
+          processors:
+            - batch
+            - memory_limiter
+            - transform/addtenant
+          receivers:
+            - otlp
+            - spanmetrics
+        traces:
+          exporters:
+            - debug
+            - spanmetrics
+            #- otlp/central
+          processors:
+            - batch
+            - memory_limiter
+            - transform/addtenant
+          receivers:
+            - otlp
+      telemetry:
+        metrics:
+          readers:
+            - pull:
+                exporter:
+                  prometheus:
+                    host: 0.0.0.0
+                    port: 8888
+  configVersions: 1
+  daemonSetUpdateStrategy: {}
+  deploymentUpdateStrategy: {}
+  ingress:
+    route: {}
+  ipFamilyPolicy: SingleStack
+  managementState: managed
+  mode: sidecar
+  networkPolicy:
+    enabled: true
+  observability:
+    metrics: {}
+  podDnsConfig: {}
+  replicas: 1
+  resources: {}
+  targetAllocator:
+    allocationStrategy: consistent-hashing
+    collectorNotReadyGracePeriod: 30s
+    collectorTargetReloadInterval: 30s
+    filterStrategy: relabel-config
+    observability:
+      metrics: {}
+    prometheusCR:
+      scrapeInterval: 30s
+    resources: {}
+  upgradeStrategy: automatic
