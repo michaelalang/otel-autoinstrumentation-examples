@@ -67,6 +67,13 @@ spec:
         resources: {}
   java:
     image: ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-java:1.33.6
+    env:
+    - name: OTEL_EXPORTER_OTLP_PROTOCOL
+      value: grpc
+    - name: OTEL_EXPORTER_OTLP_ENDPOINT
+      value: http://127.0.0.1:4317
+    - name: JAVA_TOOL_OPTIONS
+      value: -Dotel.service.name="virtual-thread-demo" -Dotel.instrumentation.methods.include="VirtualThreadSyncDemo$SharedInventory[addItem,processLayer]"
     resources:
       limits:
         cpu: 500m

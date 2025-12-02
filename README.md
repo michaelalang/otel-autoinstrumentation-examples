@@ -22,6 +22,7 @@ The repository includes 5 example applications:
 * go binary
 * Apache httpd
 * Nginx 
+* Java
 
 ### Building the images
 All applications require you to build your own image for using it. The included Dockerfiles are based upon upstream and free to use image sources except Apache and Nginx which are Red Hat registry sources as there are no free ubi9/10 release versions of those images around.
@@ -82,6 +83,38 @@ oc apply -k python3.12/deploy
 ```
 oc replace -k http/deploy
 ```
+
+#### OpenJDK 21.0.9 image
+the OpenJDK image is based on Red Hat UBI9 version and provides two versions:
+* native threads
+* spring-boot framework
+
+for the native threads autoinstrumentation example execute in the java directory following 
+
+```
+podman build -f Dockerfile
+```
+
+for the spring-boot autoinstrumentation example execute in the java directory following
+
+```
+podman build -f Dockerfile.spring
+```
+
+The images are not expected to build without the mentioned registry credentials.
+
+## Deploying the sample applications
+
+To deploy any variant into an existing OpenShift Cluster which does have the OpenTelemetryCollector installed execute the following command
+```
+oc apply -k java/deploy
+```
+
+**NOTE** to ensure when switching from application a to b that all injectors and configurations are in place ensure to use **replace** and not apply.
+```
+oc replace -k java/deploy
+```
+
 
 ### Telemetry data
 
