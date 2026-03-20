@@ -3,4 +3,6 @@ USER 0
 
 RUN dnf -y install \
       libxcrypt-compat libnsl ; \
-      yum -y clean all --enablerepo='*'
+      yum -y clean all --enablerepo='*' ; \
+      mkdir -p /usr/local/apache2 && \
+      ln -s /etc/httpd/conf /usr/local/apache2/conf
